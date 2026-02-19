@@ -10,6 +10,12 @@ const description = computed(() => (props.description || '').slice(0, 200))
 
 <template>
   <div class="w-full h-full flex flex-col justify-center bg-[#020420]">
+    <img
+      src="/trypema-logo-light.png"
+      alt="Trypema"
+      class="absolute left-[72px] top-[60px] w-[120px] h-auto"
+    >
+
     <svg
       class="absolute right-0 top-0"
       width="629"

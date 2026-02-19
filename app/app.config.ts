@@ -20,8 +20,8 @@ export default defineAppConfig({
     // Optional logo (leave empty to render text title).
     logo: {
       alt: 'Trypema',
-      light: '',
-      dark: ''
+      light: '/trypema-logo.webp',
+      dark: '/trypema-logo-light.webp'
     },
     search: true,
     colorMode: true,
