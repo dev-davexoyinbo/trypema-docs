@@ -1,7 +1,7 @@
 ---
 seo:
-  title: Trypema
-  description: High-performance rate limiting primitives in Rust (local + Redis).
+  title: Trypema - Distributed Rate Limiting for Rust
+  description: High-performance, ergonomic primitives for local and Redis-backed rate limiting.
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -12,10 +12,10 @@ orientation: horizontal
 :hero-background
 
 #title
-Trypema [Rate Limiting]{.text-primary}.
+Distributed Rate Limiting for Rust.
 
 #description
-Trypema is a Rust rate limiting library supporting both in-process enforcement and Redis-backed distributed limiting. These docs target Trypema `v1.0`.
+High-performance, ergonomic primitives for **local** (in-memory) and **Redis-backed** rate limiting. Built for Tokio with atomic Lua scripts and fractional rates.
 
 #links
   :::u-button
@@ -24,32 +24,157 @@ Trypema is a Rust rate limiting library supporting both in-process enforcement a
   size: xl
   trailing-icon: i-lucide-arrow-right
   ---
-  Get started
+  Get Started
   :::
 
   :::u-button
   ---
+  to: https://github.com/dev-davexoyinbo/trypema
+  target: _blank
+  variant: ghost
   color: neutral
-  variant: outline
   size: xl
+  icon: i-simple-icons-github
+  ---
+  GitHub
+  :::
+
+  :::u-button
+  ---
   to: https://crates.io/crates/trypema
   target: _blank
+  variant: ghost
+  color: neutral
+  size: xl
   trailing-icon: i-lucide-external-link
   ---
   crates.io
   :::
 
-  :::u-button
+#default
+  ::u-card{class="divide-y divide-neutral-200/60 dark:divide-neutral-800/60"}
+  :::prose-pre
   ---
-  icon: i-simple-icons-github
-  color: neutral
-  variant: ghost
-  size: xl
-  to: https://github.com/dev-davexoyinbo/trypema
-  target: _blank
+  filename: terminal
+  code: |
+    cargo add trypema --features redis-tokio
   ---
-  GitHub
+  ```bash
+  cargo add trypema --features redis-tokio
+  ```
   :::
+
+  :::prose-pre
+  ---
+  filename: main.rs
+  code: |
+    use trypema::{RateLimit, RateLimitDecision};
+    use trypema::redis::RedisKey;
+
+    // `rl`: a shared `RateLimiter` created once at startup
+    let rate = RateLimit::try_from(10.0).unwrap();
+
+    // Local (sync, in-process)
+    if matches!(rl.local().absolute().inc("user_123", &rate, 1), RateLimitDecision::Allowed) {
+        // proceed
+    }
+
+    // Redis (async, distributed)
+    let key = RedisKey::try_from("user_123".to_string()).unwrap();
+    if matches!(rl.redis().absolute().inc(&key, &rate, 1).await.unwrap(), RateLimitDecision::Allowed) {
+        // proceed
+    }
+  ---
+  ```rust [main.rs]
+  use trypema::{RateLimit, RateLimitDecision};
+  use trypema::redis::RedisKey;
+
+  // `rl`: a shared `RateLimiter` created once at startup
+  let rate = RateLimit::try_from(10.0).unwrap();
+
+  // Local (sync, in-process)
+  if matches!(rl.local().absolute().inc("user_123", &rate, 1), RateLimitDecision::Allowed) {
+      // proceed
+  }
+
+  // Redis (async, distributed)
+  let key = RedisKey::try_from("user_123".to_string()).unwrap();
+  if matches!(rl.redis().absolute().inc(&key, &rate, 1).await.unwrap(), RateLimitDecision::Allowed) {
+      // proceed
+  }
+  ```
+  :::
+  ::
+::
+
+::u-page-section{class="dark:bg-neutral-950"}
+#title
+Why Trypema?
+
+#features
+  :::u-page-feature
+  ---
+  icon: i-lucide-arrow-left-right
+  ---
+  #title
+  Hybrid Architecture
+  #description
+  Seamlessly switch between **Local** (in-process RAM) for microsecond latency and **Redis** for distributed consistency.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-zap
+  ---
+  #title
+  Async & Atomic
+  #description
+  Built for **Tokio**. Redis operations use atomic Lua scripts to prevent race conditions in distributed environments.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-scale
+  ---
+  #title
+  Fractional Rates
+  #description
+  Define limits with precision. Support for `f64` rates like **0.5 req/s** (1 request every 2 seconds).
+  :::
+::
+
+::u-page-section
+#title
+Strategies
+
+#description
+Choose the enforcement strategy that fits your traffic pattern.
+
+#features
+  :::u-page-feature
+  ---
+  icon: i-lucide-shield-alert
+  ---
+  #title
+  Absolute Strategy
+  #description
+  Standard rate limiting. Requests are either **Allowed** or **Rejected** (with a `retry_after` duration). Best for strict API quotas.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-activity
+  ---
+  #title
+  Suppressed Strategy
+  #description
+  Graceful degradation. Instead of hard rejections, returns a **Suppressed** signal near capacity to trigger load shedding or cheaper fallback logic.
+  :::
+::
+
+::u-page-section{class="dark:bg-neutral-950"}
+#title
+Installation
 
 #default
   :::prose-pre
@@ -59,78 +184,10 @@ Trypema is a Rust rate limiting library supporting both in-process enforcement a
     [dependencies]
     trypema = "1.0"
   ---
-
   ```toml [Cargo.toml]
   [dependencies]
   trypema = "1.0"
   ```
-  :::
-::
-
-::u-page-section{class="dark:bg-neutral-950"}
-#title
-Providers
-
-#features
-  :::u-page-feature
-  ---
-  icon: i-lucide-cpu
-  ---
-  #title
-  Local (In-Process)
-
-  #description
-  In-memory, per-key sliding windows with low overhead. Great for single-process services.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-database
-  ---
-  #title
-  Redis (Distributed)
-
-  #description
-  Redis-backed enforcement for multi-instance deployments. Atomic Lua scripts; best-effort distributed semantics.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-gauge
-  ---
-  #title
-  Non-integer Rates
-
-  #description
-  Configure limits as requests/second using `f64` (e.g. `5.5 req/s`).
-  :::
-::
-
-::u-page-section{class="dark:bg-neutral-950"}
-#title
-Strategies
-
-#features
-  :::u-page-feature
-  ---
-  icon: i-lucide-shield
-  ---
-  #title
-  Absolute
-
-  #description
-  Deterministic sliding-window enforcement with hard rejection when over limit.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-waves
-  ---
-  #title
-  Suppressed
-
-  #description
-  Probabilistic suppression near capacity to degrade gracefully under load spikes.
   :::
 ::
 
@@ -146,11 +203,11 @@ Strategies
       target: _blank
       variant: subtle
       icon: i-simple-icons-rust
-  title: Add rate limiting with confidence
-  description: Pick local or Redis, choose absolute or suppressed, and ship predictable behavior under load.
+  title: Ready to ship?
+  description: Pick local or Redis, choose your strategy, and handle load with confidence.
   class: dark:bg-neutral-950
   ---
-
+  
   :stars-bg
   :::
 ::
