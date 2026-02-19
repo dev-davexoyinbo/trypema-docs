@@ -36,7 +36,6 @@ export default defineAppConfig({
       'target': '_blank',
       'aria-label': 'docs.rs'
     }, {
-      'icon': 'i-simple-icons-cratesdotio',
       'to': 'https://crates.io/crates/trypema',
       'target': '_blank',
       'aria-label': 'crates.io'
