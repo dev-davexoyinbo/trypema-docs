@@ -144,6 +144,10 @@ Why Trypema?
 ::
 
 ::u-page-section
+---
+ui:
+  features: 'lg:grid-cols-2'
+---
 #title
 Strategies
 
