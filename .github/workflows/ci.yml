@@ -44,7 +44,7 @@ jobs:
         run: pnpm run typecheck
 
       - name: Build
-        run: pnpm run build
+        run: NUXT_APP_BASE_URL=/trypema-docs/ pnpm run build --preset github_pages
 
   build_pages:
     name: Build GitHub Pages
@@ -61,7 +61,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: pnpm
 
       - name: Install dependencies
