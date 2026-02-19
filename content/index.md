@@ -1,7 +1,7 @@
 ---
 seo:
-  title: Nuxt Docs Template
-  description: Create stunning, fast and SEO-optimized documentation sites with Nuxt UI.
+  title: Trypema
+  description: High-performance rate limiting primitives in Rust (local + Redis).
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -12,10 +12,10 @@ orientation: horizontal
 :hero-background
 
 #title
-Ship Beautiful [Documentation]{.text-primary}.
+Trypema [Rate Limiting]{.text-primary}.
 
 #description
-Build professional documentation with Nuxt UI's powerful components, enhanced typography, and seamless Nuxt Content integration. The same system trusted by the entire [Nuxt ecosystem](https://nuxt.com).
+Trypema is a Rust rate limiting library supporting both in-process enforcement and Redis-backed distributed limiting. These docs target Trypema `v1.0`.
 
 #links
   :::u-button
@@ -29,182 +29,58 @@ Build professional documentation with Nuxt UI's powerful components, enhanced ty
 
   :::u-button
   ---
-  icon: i-simple-icons-github
+  icon: i-simple-icons-cratesdotio
   color: neutral
   variant: outline
   size: xl
-  to: https://github.com/nuxt-ui-templates/docs
+  to: https://crates.io/crates/trypema
   target: _blank
   ---
-  Use this template
+  crates.io
+  :::
+
+  :::u-button
+  ---
+  icon: i-simple-icons-github
+  color: neutral
+  variant: ghost
+  size: xl
+  to: https://github.com/dev-davexoyinbo/trypema
+  target: _blank
+  ---
+  GitHub
   :::
 
 #default
   :::prose-pre
   ---
+  filename: Cargo.toml
   code: |
-    export default defineNuxtConfig({
-      modules: [
-        '@nuxt/ui',
-        '@nuxt/content',
-        'nuxt-og-image',
-        'nuxt-llms'
-      ],
-
-      css: ['~/assets/css/main.css']
-    })
-  filename: nuxt.config.ts
+    [dependencies]
+    trypema = "1.0"
   ---
 
-  ```ts [nuxt.config.ts]
-  export default defineNuxtConfig({
-    modules: [
-      '@nuxt/ui',
-      '@nuxt/content',
-      'nuxt-og-image',
-      'nuxt-llms'
-    ],
-
-    css: ['~/assets/css/main.css']
-  })
+  ```toml [Cargo.toml]
+  [dependencies]
+  trypema = "1.0"
   ```
   :::
 ::
 
 ::u-page-section{class="dark:bg-neutral-950"}
 #title
-Powered by Nuxt UI components
-
-#links
-  :::u-button
-  ---
-  color: neutral
-  size: lg
-  target: _blank
-  to: https://ui.nuxt.com/docs/getting-started/installation/nuxt
-  trailingIcon: i-lucide-arrow-right
-  variant: subtle
-  ---
-  Explore Nuxt UI
-  :::
+Providers
 
 #features
   :::u-page-feature
   ---
-  icon: i-lucide-palette
+  icon: i-lucide-cpu
   ---
   #title
-  100+ UI Components
+  Local (In-Process)
 
   #description
-  Access the complete Nuxt UI component library. From badges to modals, everything styled and accessible out of the box.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-type
-  ---
-  #title
-  Beautiful Typography
-
-  #description
-  Pre-styled prose components with perfect visual harmony. No need for @tailwindcss/typography - get precise control over every element.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-layers
-  ---
-  #title
-  Rich Prose Components
-
-  #description
-  Accordions, cards, callouts, tabs, steps, code blocks, and more - all provided by Nuxt UI for interactive documentation.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-search
-  ---
-  #title
-  Built-in Search
-
-  #description
-  Full-text search with ContentSearch component. No need for Algolia - instant, relevant results with keyboard shortcuts (⌘K).
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-navigation
-  ---
-  #title
-  Smart Navigation
-
-  #description
-  Auto-generated navigation with ContentNavigation and ContentToc components. Sticky table of contents and prev/next links.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-moon
-  ---
-  #title
-  Dark Mode Ready
-
-  #description
-  Automatic theme switching with smooth transitions. Respects system preferences and remembers user choice.
-  :::
-::
-
-::u-page-section{class="dark:bg-neutral-950"}
-#title
-Enhanced with Nuxt Content
-
-#links
-  :::u-button
-  ---
-  color: neutral
-  size: lg
-  target: _blank
-  to: https://content.nuxt.com/docs/getting-started/installation
-  trailingIcon: i-lucide-arrow-right
-  variant: subtle
-  ---
-  Explore Nuxt Content
-  :::
-
-#features
-  :::u-page-feature
-  ---
-  icon: i-simple-icons-markdown
-  ---
-  #title
-  MDC Enhanced Markdown
-
-  #description
-  Write in Markdown while embedding Vue components. Seamlessly integrate interactive elements in your content.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-file-text
-  ---
-  #title
-  File-based Routing
-
-  #description
-  Organize content in folders and files. Your documentation structure automatically becomes your navigation.
-  :::
-
-  :::u-page-feature
-  ---
-  icon: i-lucide-code
-  ---
-  #title
-  Syntax Highlighting
-
-  #description
-  Beautiful code blocks with language detection, line numbers, and copy buttons. Support for 100+ languages.
+  In-memory, per-key sliding windows with low overhead. Great for single-process services.
   :::
 
   :::u-page-feature
@@ -212,32 +88,49 @@ Enhanced with Nuxt Content
   icon: i-lucide-database
   ---
   #title
-  Content Database
+  Redis (Distributed)
 
   #description
-  Query your content with a MongoDB-like API. Filter, sort, and search through your documentation programmatically.
+  Redis-backed enforcement for multi-instance deployments. Atomic Lua scripts; best-effort distributed semantics.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-file-code
+  icon: i-lucide-gauge
   ---
   #title
-  Frontmatter Support
+  Non-integer Rates
 
   #description
-  Add metadata to your content files. Define SEO tags, navigation properties, and custom fields.
+  Configure limits as requests/second using `f64` (e.g. `5.5 req/s`).
+  :::
+::
+
+::u-page-section{class="dark:bg-neutral-950"}
+#title
+Strategies
+
+#features
+  :::u-page-feature
+  ---
+  icon: i-lucide-shield
+  ---
+  #title
+  Absolute
+
+  #description
+  Deterministic sliding-window enforcement with hard rejection when over limit.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-git-branch
+  icon: i-lucide-waves
   ---
   #title
-  Version Control
+  Suppressed
 
   #description
-  Content lives in your repository. Branch, review, and deploy documentation alongside your code.
+  Probabilistic suppression near capacity to degrade gracefully under load spikes.
   :::
 ::
 
@@ -245,16 +138,16 @@ Enhanced with Nuxt Content
   :::u-page-c-t-a
   ---
   links:
-    - label: Start building
+    - label: Get started
       to: '/getting-started'
       trailingIcon: i-lucide-arrow-right
-    - label: View on GitHub
-      to: 'https://github.com/nuxt-ui-templates/docs'
+    - label: API docs (docs.rs)
+      to: 'https://docs.rs/trypema'
       target: _blank
       variant: subtle
-      icon: i-simple-icons-github
-  title: Ready to build an amazing documentation?
-  description: Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today.
+      icon: i-simple-icons-rust
+  title: Add rate limiting with confidence
+  description: Pick local or Redis, choose absolute or suppressed, and ship predictable behavior under load.
   class: dark:bg-neutral-950
   ---
 
