@@ -176,24 +176,6 @@ Choose the enforcement strategy that fits your traffic pattern.
   :::
 ::
 
-::u-page-section{class="dark:bg-neutral-950"}
-#title
-Installation
-
-#default
-  :::prose-pre
-  ---
-  filename: Cargo.toml
-  code: |
-    [dependencies]
-    trypema = "1.0"
-  ---
-  ```toml [Cargo.toml]
-  [dependencies]
-  trypema = "1.0"
-  ```
-  :::
-::
 
 ::u-page-section{class="dark:bg-gradient-to-b from-neutral-950 to-neutral-900"}
   :::u-page-c-t-a
