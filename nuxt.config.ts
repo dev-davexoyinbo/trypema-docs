@@ -1,20 +1,22 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: false,
+
   modules: [
-    '@nuxt/eslint',
-    '@nuxt/image',
-    '@nuxt/ui',
-    '@nuxt/content',
-    'nuxt-og-image',
-    'nuxt-llms',
-    '@nuxtjs/mcp-toolkit'
+    "@nuxt/eslint",
+    "@nuxt/image",
+    "@nuxt/ui",
+    "@nuxt/content",
+    "nuxt-og-image",
+    "nuxt-llms",
+    "@nuxtjs/mcp-toolkit",
   ],
 
   devtools: {
-    enabled: true
+    enabled: true,
   },
 
-  css: ['~/assets/css/main.css'],
+  css: ["~/assets/css/main.css"],
 
   content: {
     build: {
@@ -22,121 +24,123 @@ export default defineNuxtConfig({
         highlight: {
           theme: {
             // Default theme (same as single string)
-            default: 'github-light',
+            default: "github-light",
             // Theme used if `html.dark`
-            dark: 'github-dark',
+            dark: "github-dark",
             // Theme used if `html.sepia`
-            sepia: 'monokai'
+            sepia: "monokai",
           },
           // Nuxt Content does not load all languages by default.
           // Add the ones we use in this docs site.
           langs: [
-            'json',
-            'js',
-            'ts',
-            'html',
-            'css',
-            'vue',
-            'shell',
-            'bash',
-            'mdc',
-            'md',
-            'yaml',
-            'toml',
-            'rust'
-          ]
+            "json",
+            "js",
+            "ts",
+            "html",
+            "css",
+            "vue",
+            "shell",
+            "bash",
+            "mdc",
+            "md",
+            "yaml",
+            "toml",
+            "rust",
+          ],
         },
         toc: {
-          searchDepth: 1
-        }
-      }
-    }
+          searchDepth: 1,
+        },
+      },
+    },
   },
 
   experimental: {
-    asyncContext: true
+    asyncContext: true,
   },
 
-  compatibilityDate: '2024-07-11',
+  compatibilityDate: "2024-07-11",
 
   nitro: {
     prerender: {
-      routes: ['/'],
+      routes: ["/"],
       crawlLinks: true,
-      autoSubfolderIndex: false
-    }
+      autoSubfolderIndex: false,
+    },
   },
 
   eslint: {
     config: {
       stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
-      }
-    }
+        commaDangle: "never",
+        braceStyle: "1tbs",
+      },
+    },
   },
 
   icon: {
-    provider: 'iconify'
+    provider: "iconify",
   },
 
   llms: {
     // Used by nuxt-llms to generate LLM-friendly docs exports.
     // Update `domain` once the docs site is deployed.
-    domain: 'http://localhost:3000',
-    title: 'Trypema',
-    description: 'Trypema is a Rust rate limiting library for local and Redis-backed enforcement.',
+    domain: "http://localhost:3000",
+    title: "Trypema",
+    description:
+      "Trypema is a Rust rate limiting library for local and Redis-backed enforcement.",
     full: {
-      title: 'Trypema - Full Documentation',
-      description: 'Full documentation for Trypema (Rust rate limiting library).'
+      title: "Trypema - Full Documentation",
+      description:
+        "Full documentation for Trypema (Rust rate limiting library).",
     },
     sections: [
       {
-        title: 'Getting Started',
-        contentCollection: 'docs',
+        title: "Getting Started",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/getting-started%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/getting-started%" },
+        ],
       },
       {
-        title: 'Concepts',
-        contentCollection: 'docs',
+        title: "Concepts",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/concepts%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/concepts%" },
+        ],
       },
       {
-        title: 'Strategies',
-        contentCollection: 'docs',
+        title: "Strategies",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/strategies%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/strategies%" },
+        ],
       },
       {
-        title: 'Providers',
-        contentCollection: 'docs',
+        title: "Providers",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/providers%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/providers%" },
+        ],
       },
       {
-        title: 'Guides',
-        contentCollection: 'docs',
+        title: "Guides",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/guides%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/guides%" },
+        ],
       },
       {
-        title: 'Reference',
-        contentCollection: 'docs',
+        title: "Reference",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/reference%' }
-        ]
-      }
-    ]
+          { field: "path", operator: "LIKE", value: "/reference%" },
+        ],
+      },
+    ],
   },
 
   mcp: {
-    name: 'Trypema docs'
-  }
-})
+    name: "Trypema docs",
+  },
+});

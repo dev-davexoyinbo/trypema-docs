@@ -29,12 +29,12 @@ Trypema is a Rust rate limiting library supporting both in-process enforcement a
 
   :::u-button
   ---
-  icon: i-simple-icons-cratesdotio
   color: neutral
   variant: outline
   size: xl
   to: https://crates.io/crates/trypema
   target: _blank
+  trailing-icon: i-lucide-external-link
   ---
   crates.io
   :::
