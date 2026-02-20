@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import type { ContentNavigationItem } from "@nuxt/content";
+import type { ContentNavigationItem } from '@nuxt/content'
 
-const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
+const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 
-const { header } = useAppConfig();
+const { header } = useAppConfig()
 </script>
 
 <template>
-  <UHeader :ui="{ center: 'flex-1' }" :to="header?.to || '/'">
+  <UHeader
+    :ui="{ center: 'flex-1' }"
+    :to="header?.to || '/'"
+  >
     <UContentSearchButton
       v-if="header?.search"
       :collapsed="false"
@@ -29,7 +32,10 @@ const { header } = useAppConfig();
           class="h-6 w-auto shrink-0"
         />
 
-        <span v-if="header?.title" class="font-semibold text-base">
+        <span
+          v-if="header?.title"
+          class="font-semibold text-base"
+        >
           {{ header.title }}
         </span>
       </div>
@@ -39,7 +45,10 @@ const { header } = useAppConfig();
       </span>
     </template>
 
-    <template v-else #left>
+    <template
+      v-else
+      #left
+    >
       <NuxtLink :to="header?.to || '/'">
         <AppLogo class="w-auto h-6 shrink-0" />
       </NuxtLink>
@@ -48,7 +57,10 @@ const { header } = useAppConfig();
     </template>
 
     <template #right>
-      <UContentSearchButton v-if="header?.search" class="lg:hidden" />
+      <UContentSearchButton
+        v-if="header?.search"
+        class="lg:hidden"
+      />
 
       <UColorModeButton v-if="header?.colorMode" />
 
@@ -62,7 +74,10 @@ const { header } = useAppConfig();
     </template>
 
     <template #body>
-      <UContentNavigation highlight :navigation="navigation" />
+      <UContentNavigation
+        highlight
+        :navigation="navigation"
+      />
     </template>
   </UHeader>
 </template>
