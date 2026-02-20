@@ -1,62 +1,70 @@
-# Nuxt Docs Template
+# Trypema Docs
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+Documentation site for Trypema, built with Nuxt 4 + Nuxt UI + Nuxt Content.
 
-Use this template to build your own documentation with [Nuxt UI](https://ui.nuxt.com) quickly.
+## Requirements
 
-- [Live demo](https://docs-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation)
-
-<a href="https://docs-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/docs-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/docs-light.png">
-    <img alt="Nuxt Docs Template" src="https://ui.nuxt.com/assets/templates/nuxt/docs-light.png">
-  </picture>
-</a>
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t github:nuxt-ui-templates/docs
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=docs&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fdocs&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fdocs-dark.png&demo-url=https%3A%2F%2Fdocs-template.nuxt.dev%2F&demo-title=Nuxt%20Docs%20Template&demo-description=A%20documentation%20template%20powered%20by%20Nuxt%20Content.)
+- Node.js (LTS recommended)
+- pnpm (this repo pins `pnpm@10.29.3`)
 
 ## Setup
-
-Make sure to install the dependencies:
 
 ```bash
 pnpm install
 ```
 
-## Development Server
+`pnpm install` runs `nuxt prepare` (generates `.nuxt/`).
 
-Start the development server on `http://localhost:3000`:
+## Development
+
+Start the dev server on `http://localhost:3000`:
 
 ```bash
 pnpm dev
 ```
 
-## Production
+## Quality Checks
 
-Build the application for production:
+```bash
+pnpm lint
+pnpm typecheck
+```
+
+## Production
 
 ```bash
 pnpm build
-```
-
-Locally preview production build:
-
-```bash
 pnpm preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+If build output looks wrong, clear Nuxt caches and rebuild:
 
-## Renovate integration
+```bash
+rm -rf .nuxt .output node_modules/.cache
+pnpm install
+pnpm build
+```
 
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+## Content Authoring
+
+- Docs live in `content/` (Markdown + `.navigation.yml`).
+- Each page should include frontmatter with at least:
+  - `title`
+  - `description`
+  - `navigation.icon` (Iconify name like `i-lucide-book-open`)
+- Folder ordering uses numeric prefixes (e.g. `content/1.getting-started/`).
+
+Code fences: use plain language ids (e.g. `bash`, `toml`, `rust`) and avoid modifiers like `rust,no_run`.
+
+## Useful Routes
+
+- Raw Markdown export for LLM-friendly consumption: `GET /raw/<path>.md`
+  - Example: `http://localhost:3000/raw/getting-started/quickstart-local.md`
+
+## Repository Layout
+
+- `app/`: Nuxt UI app (layouts, pages, components)
+- `content/`: Nuxt Content sources
+- `server/routes/raw/[...slug].md.get.ts`: `/raw/*.md` route
+- `server/mcp/tools/`: MCP tools for listing/getting pages
+- `nuxt.config.ts`: Nuxt + Content + nuxt-llms configuration
