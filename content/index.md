@@ -1,7 +1,7 @@
 ---
 seo:
   title: Trypema - Distributed Rate Limiting for Rust
-  description: High-performance, ergonomic primitives for local and Redis-backed rate limiting.
+  description: High-performance, ergonomic primitives for local, Redis-backed, and hybrid rate limiting.
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -15,7 +15,7 @@ orientation: horizontal
 Distributed Rate Limiting for Rust.
 
 #description
-High-performance, ergonomic primitives for **local** (in-memory) and **Redis-backed** rate limiting. Built for Tokio with atomic Lua scripts and fractional rates.
+High-performance, ergonomic primitives for **local** (in-memory), **Redis-backed**, and **hybrid** rate limiting. Built for Tokio with atomic Lua scripts and fractional rates.
 
 #links
   :::u-button
