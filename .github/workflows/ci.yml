@@ -44,6 +44,8 @@ jobs:
         run: pnpm run typecheck
 
       - name: Build
+        env:
+          NUXT_PUBLIC_GTAG_ID: ${{ secrets.NUXT_PUBLIC_GTAG_ID }}
         run: NUXT_APP_BASE_URL=/trypema-docs/ pnpm run build --preset github_pages
 
   build_pages:
@@ -68,9 +70,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build (github_pages preset)
-        # env:
-        #   # GitHub Pages project sites are served from /<repo>/
-        #   NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+        env:
+          # GitHub Pages project sites are served from /<repo>/
+          # NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+          NUXT_PUBLIC_GTAG_ID: ${{ secrets.NUXT_PUBLIC_GTAG_ID }}
         run: pnpm exec nuxt build --preset github_pages
 
       - name: Upload artifact

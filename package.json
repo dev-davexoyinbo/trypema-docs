@@ -23,6 +23,7 @@
     "better-sqlite3": "^12.6.2",
     "minimark": "^0.2.0",
     "nuxt": "^4.3.1",
+    "nuxt-gtag": "4.1.0",
     "nuxt-llms": "0.2.0",
     "nuxt-og-image": "^5.1.13",
     "tailwindcss": "^4.1.18",
