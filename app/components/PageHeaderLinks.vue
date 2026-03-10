@@ -4,11 +4,11 @@ import { useClipboard } from '@vueuse/core'
 const route = useRoute()
 const toast = useToast()
 const { copy, copied } = useClipboard()
-const site = useSiteConfig()
+const requestURL = useRequestURL()
 
-const mdPath = computed(() => `${site.url}/raw${route.path}.md`)
+const mdPath = computed(() => `${requestURL.origin}/raw${route.path}.md`)
 
-const items = [
+const items = computed(() => [
   {
     label: 'Copy Markdown link',
     icon: 'i-lucide-link',
@@ -38,7 +38,7 @@ const items = [
     target: '_blank',
     to: `https://claude.ai/new?q=${encodeURIComponent(`Read ${mdPath.value} so I can ask questions about it.`)}`
   }
-]
+])
 
 async function copyPage() {
   copy(await $fetch<string>(`/raw${route.path}.md`))
