@@ -1,4 +1,51 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { readdirSync, statSync } from 'node:fs'
+import { join, relative } from 'node:path'
+
+/**
+ * Walk all .md files under `dir` and return their paths relative to `dir`.
+ */
+function walkMd(dir: string, base = dir): string[] {
+  const results: string[] = []
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) {
+      results.push(...walkMd(full, base))
+    } else if (entry.endsWith('.md')) {
+      results.push(relative(base, full))
+    }
+  }
+  return results
+}
+
+/**
+ * Convert a content file's relative path to the URL path Nuxt Content assigns it.
+ * Rules (mirrors @nuxt/content v3 behaviour):
+ *   - Strip leading numeric prefix from each segment (e.g. "1.getting-started" → "getting-started")
+ *   - "index" filename → use the parent path (i.e. strip the filename)
+ *   - Skip root index.md (served as landing collection, not docs)
+ *   - Strip .md extension
+ */
+function contentPathToRoute(relPath: string): string | null {
+  // Normalise to forward slashes, strip .md
+  const withoutExt = relPath.replace(/\\/g, '/').replace(/\.md$/, '')
+
+  // Skip root index (landing page, not in docs collection)
+  if (withoutExt === 'index') return null
+
+  const segments = withoutExt.split('/').map(seg =>
+    // Strip numeric ordering prefix: "1.getting-started" → "getting-started"
+    seg.replace(/^\d+\./, '')
+  )
+
+  // "index" segment means the page lives at the parent path
+  if (segments[segments.length - 1] === 'index') {
+    segments.pop()
+  }
+
+  return '/' + segments.join('/')
+}
+
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
@@ -69,6 +116,20 @@ export default defineNuxtConfig({
       routes: ['/'],
       crawlLinks: true,
       autoSubfolderIndex: false
+    }
+  },
+
+  hooks: {
+    'nitro:config'(nitroConfig) {
+      const contentDir = join(__dirname, 'content')
+      const rawRoutes = walkMd(contentDir)
+        .map(contentPathToRoute)
+        .filter((r): r is string => r !== null)
+        .map(r => `/raw${r}.md`)
+
+      nitroConfig.prerender ??= {}
+      nitroConfig.prerender.routes ??= []
+      nitroConfig.prerender.routes.push(...rawRoutes)
     }
   },
 
