@@ -26,6 +26,10 @@ export default defineAppConfig({
     search: true,
     colorMode: true,
     links: [{
+      'icon': 'i-lucide-scroll',
+      'to': '/changelog',
+      'aria-label': 'Changelog'
+    }, {
       'icon': 'i-simple-icons-github',
       'to': 'https://github.com/dev-davexoyinbo/trypema',
       'target': '_blank',
@@ -45,6 +49,10 @@ export default defineAppConfig({
     credits: `Trypema • © ${new Date().getFullYear()}`,
     colorMode: false,
     links: [{
+      'icon': 'i-lucide-scroll',
+      'to': '/changelog',
+      'aria-label': 'Changelog'
+    }, {
       'icon': 'i-simple-icons-github',
       'to': 'https://github.com/dev-davexoyinbo/trypema',
       'target': '_blank',

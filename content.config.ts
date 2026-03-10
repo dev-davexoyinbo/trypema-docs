@@ -18,6 +18,19 @@ export default defineContentConfig({
           icon: z.string(),
           to: z.string(),
           target: z.string().optional()
+        })).optional(),
+        date: z.string().optional(),
+        badge: z.string().optional(),
+        authors: z.array(z.object({
+          name: z.string(),
+          description: z.string().optional(),
+          avatar: z.object({
+            src: z.string(),
+            alt: z.string().optional(),
+            loading: z.enum(['eager', 'lazy']).optional()
+          }).optional(),
+          to: z.string().optional(),
+          target: z.string().optional()
         })).optional()
       })
     })
