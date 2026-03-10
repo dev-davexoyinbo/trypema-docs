@@ -1,21 +1,21 @@
 <script setup lang="ts">
-const { data: page } = await useAsyncData('index', () => queryCollection('landing').path('/').first())
+const { data: page } = await useAsyncData("index", () => queryCollection("landing").path("/").first());
 if (!page.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Page not found', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: "Page not found", fatal: true });
 }
 
-const title = page.value.seo?.title || page.value.title
-const description = page.value.seo?.description || page.value.description
+const title = page.value.seo?.title || page.value.title;
+const description = page.value.seo?.description || page.value.description;
 
 useSeoMeta({
-  titleTemplate: '',
+  titleTemplate: "",
   title,
   ogTitle: title,
   description,
   ogDescription: description,
-  ogImage: '/trypema-logo.png',
-  twitterImage: '/trypema-logo.png'
-})
+  ogImage: "/trypema-logo.png",
+  twitterImage: "/trypema-logo.png",
+});
 </script>
 
 <template>

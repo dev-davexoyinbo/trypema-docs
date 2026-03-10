@@ -1,21 +1,21 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { readdirSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 
 /**
  * Walk all .md files under `dir` and return their paths relative to `dir`.
  */
 function walkMd(dir: string, base = dir): string[] {
-  const results: string[] = []
+  const results: string[] = [];
   for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry)
+    const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
-      results.push(...walkMd(full, base))
-    } else if (entry.endsWith('.md')) {
-      results.push(relative(base, full))
+      results.push(...walkMd(full, base));
+    } else if (entry.endsWith(".md")) {
+      results.push(relative(base, full));
     }
   }
-  return results
+  return results;
 }
 
 /**
@@ -28,45 +28,45 @@ function walkMd(dir: string, base = dir): string[] {
  */
 function contentPathToRoute(relPath: string): string | null {
   // Normalise to forward slashes, strip .md
-  const withoutExt = relPath.replace(/\\/g, '/').replace(/\.md$/, '')
+  const withoutExt = relPath.replace(/\\/g, "/").replace(/\.md$/, "");
 
   // Skip root index (landing page, not in docs collection)
-  if (withoutExt === 'index') return null
+  if (withoutExt === "index") return null;
 
-  const segments = withoutExt.split('/').map(seg =>
+  const segments = withoutExt.split("/").map(seg =>
     // Strip numeric ordering prefix: "1.getting-started" → "getting-started"
-    seg.replace(/^\d+\./, '')
-  )
+    seg.replace(/^\d+\./, ""),
+  );
 
   // "index" segment means the page lives at the parent path
-  if (segments[segments.length - 1] === 'index') {
-    segments.pop()
+  if (segments[segments.length - 1] === "index") {
+    segments.pop();
   }
 
-  return '/' + segments.join('/')
+  return "/" + segments.join("/");
 }
 
 export default defineNuxtConfig({
   modules: [
-    '@nuxt/eslint',
-    '@nuxt/image',
-    '@nuxt/ui',
-    '@nuxt/content',
-    'nuxt-og-image',
-    'nuxt-llms',
-    '@nuxtjs/mcp-toolkit',
-    'nuxt-gtag'
+    "@nuxt/eslint",
+    "@nuxt/image",
+    "@nuxt/ui",
+    "@nuxt/content",
+    "nuxt-og-image",
+    "nuxt-llms",
+    "@nuxtjs/mcp-toolkit",
+    "nuxt-gtag",
   ],
 
   devtools: {
-    enabled: true
+    enabled: true,
   },
 
   app: {
-    baseURL: process.env.NUXT_APP_BASE_URL || '/'
+    baseURL: process.env.NUXT_APP_BASE_URL || "/",
   },
 
-  css: ['~/assets/css/main.css'],
+  css: ["~/assets/css/main.css"],
 
   content: {
     build: {
@@ -74,141 +74,141 @@ export default defineNuxtConfig({
         highlight: {
           theme: {
             // Default theme (same as single string)
-            default: 'github-light',
+            default: "github-light",
             // Theme used if `html.dark`
-            dark: 'github-dark',
+            dark: "github-dark",
             // Theme used if `html.sepia`
-            sepia: 'monokai'
+            sepia: "monokai",
           },
           // Nuxt Content does not load all languages by default.
           // Add the ones we use in this docs site.
           langs: [
-            'json',
-            'js',
-            'ts',
-            'html',
-            'css',
-            'vue',
-            'shell',
-            'bash',
-            'mdc',
-            'md',
-            'yaml',
-            'toml',
-            'rust'
-          ]
+            "json",
+            "js",
+            "ts",
+            "html",
+            "css",
+            "vue",
+            "shell",
+            "bash",
+            "mdc",
+            "md",
+            "yaml",
+            "toml",
+            "rust",
+          ],
         },
         toc: {
-          searchDepth: 1
-        }
-      }
-    }
+          searchDepth: 1,
+        },
+      },
+    },
   },
 
   experimental: {
-    asyncContext: true
+    asyncContext: true,
   },
 
-  compatibilityDate: '2024-07-11',
+  compatibilityDate: "2024-07-11",
 
   nitro: {
     prerender: {
-      routes: ['/'],
+      routes: ["/"],
       crawlLinks: true,
-      autoSubfolderIndex: false
-    }
+      autoSubfolderIndex: false,
+    },
   },
 
   hooks: {
-    'nitro:config'(nitroConfig) {
-      const contentDir = join(__dirname, 'content')
+    "nitro:config"(nitroConfig) {
+      const contentDir = join(__dirname, "content");
       const rawRoutes = walkMd(contentDir)
         .map(contentPathToRoute)
         .filter((r): r is string => r !== null)
-        .map(r => `/raw${r}.md`)
+        .map(r => `/raw${r}.md`);
 
-      nitroConfig.prerender ??= {}
-      nitroConfig.prerender.routes ??= []
-      nitroConfig.prerender.routes.push(...rawRoutes)
-    }
+      nitroConfig.prerender ??= {};
+      nitroConfig.prerender.routes ??= [];
+      nitroConfig.prerender.routes.push(...rawRoutes);
+    },
   },
 
   eslint: {
     config: {
       stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
-      }
-    }
+        commaDangle: "never",
+        braceStyle: "1tbs",
+      },
+    },
   },
 
   gtag: {
-    id: process.env.NUXT_PUBLIC_GTAG_ID
+    id: process.env.NUXT_PUBLIC_GTAG_ID,
   },
 
   icon: {
-    provider: 'iconify'
+    provider: "iconify",
   },
 
   llms: {
     // Used by nuxt-llms to generate LLM-friendly docs exports.
     // Update `domain` once the docs site is deployed.
-    domain: 'http://localhost:3000',
-    title: 'Trypema',
+    domain: "http://localhost:3000",
+    title: "Trypema",
     description:
-      'Trypema is a Rust rate limiting library for local and Redis-backed enforcement.',
+      "Trypema is a Rust rate limiting library for local and Redis-backed enforcement.",
     full: {
-      title: 'Trypema - Full Documentation',
+      title: "Trypema - Full Documentation",
       description:
-        'Full documentation for Trypema (Rust rate limiting library).'
+        "Full documentation for Trypema (Rust rate limiting library).",
     },
     sections: [
       {
-        title: 'Getting Started',
-        contentCollection: 'docs',
+        title: "Getting Started",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/getting-started%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/getting-started%" },
+        ],
       },
       {
-        title: 'Concepts',
-        contentCollection: 'docs',
+        title: "Concepts",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/concepts%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/concepts%" },
+        ],
       },
       {
-        title: 'Strategies',
-        contentCollection: 'docs',
+        title: "Strategies",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/strategies%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/strategies%" },
+        ],
       },
       {
-        title: 'Providers',
-        contentCollection: 'docs',
+        title: "Providers",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/providers%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/providers%" },
+        ],
       },
       {
-        title: 'Guides',
-        contentCollection: 'docs',
+        title: "Guides",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/guides%' }
-        ]
+          { field: "path", operator: "LIKE", value: "/guides%" },
+        ],
       },
       {
-        title: 'Reference',
-        contentCollection: 'docs',
+        title: "Reference",
+        contentCollection: "docs",
         contentFilters: [
-          { field: 'path', operator: 'LIKE', value: '/reference%' }
-        ]
-      }
-    ]
+          { field: "path", operator: "LIKE", value: "/reference%" },
+        ],
+      },
+    ],
   },
 
   mcp: {
-    name: 'Trypema docs'
-  }
-})
+    name: "Trypema docs",
+  },
+});

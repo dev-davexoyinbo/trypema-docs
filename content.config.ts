@@ -1,23 +1,23 @@
-import { defineContentConfig, defineCollection, z } from '@nuxt/content'
+import { defineContentConfig, defineCollection, z } from "@nuxt/content";
 
 export default defineContentConfig({
   collections: {
     landing: defineCollection({
-      type: 'page',
-      source: 'index.md'
+      type: "page",
+      source: "index.md",
     }),
     docs: defineCollection({
-      type: 'page',
+      type: "page",
       source: {
-        include: '**',
-        exclude: ['index.md']
+        include: "**",
+        exclude: ["index.md"],
       },
       schema: z.object({
         links: z.array(z.object({
           label: z.string(),
           icon: z.string(),
           to: z.string(),
-          target: z.string().optional()
+          target: z.string().optional(),
         })).optional(),
         date: z.string().optional(),
         badge: z.string().optional(),
@@ -27,12 +27,12 @@ export default defineContentConfig({
           avatar: z.object({
             src: z.string(),
             alt: z.string().optional(),
-            loading: z.enum(['eager', 'lazy']).optional()
+            loading: z.enum(["eager", "lazy"]).optional(),
           }).optional(),
           to: z.string().optional(),
-          target: z.string().optional()
-        })).optional()
-      })
-    })
-  }
-})
+          target: z.string().optional(),
+        })).optional(),
+      }),
+    }),
+  },
+});
