@@ -1,7 +1,7 @@
 ---
 seo:
   title: Trypema - Distributed Rate Limiting for Rust
-  description: High-performance rate limiting for Rust — local, Redis-backed, and hybrid providers with strict and probabilistic strategies.
+  description: Sliding-window rate limiting for Rust with local, Redis, and hybrid providers plus absolute and suppressed strategies.
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -12,10 +12,10 @@ orientation: horizontal
 :hero-background
 
 #title
-Distributed Rate Limiting for Rust.
+One rust rate limiter for in-memory and distributed workloads.
 
 #description
-High-performance, ergonomic primitives for **local** (in-memory), **Redis-backed**, and **hybrid** rate limiting. Built for Tokio with atomic Lua scripts and fractional rates.
+Trypema gives you one API for **in-process**, **Redis-backed**, and **hybrid** sliding-window rate limiting. Start with a single service, then scale to distributed systems without switching libraries or changing mental models.
 
 #links
   :::u-button
@@ -55,12 +55,14 @@ High-performance, ergonomic primitives for **local** (in-memory), **Redis-backed
   ::u-card{class="divide-y divide-neutral-200/60 dark:divide-neutral-800/60"}
   :::prose-pre
   ---
-  filename: terminal
+  filename: Cargo.toml
   code: |
-    cargo add trypema
+    [dependencies]
+    trypema = "1"
   ---
-  ```bash
-  cargo add trypema
+  ```toml [Cargo.toml]
+  [dependencies]
+  trypema = "1"
   ```
   :::
 
@@ -68,51 +70,31 @@ High-performance, ergonomic primitives for **local** (in-memory), **Redis-backed
   ---
   filename: main.rs
   code: |
-    use std::sync::Arc;
     use trypema::{RateLimit, RateLimitDecision, RateLimiter};
 
-    let rate = RateLimit::try_from(10.0).unwrap(); // 10 req/s
+    let rl = RateLimiter::builder().build().unwrap();
+    let rate = RateLimit::try_from(10.0).unwrap();
 
-    // Absolute: allow or reject
     match rl.local().absolute().inc("user_123", &rate, 1) {
         RateLimitDecision::Allowed => { /* proceed */ }
         RateLimitDecision::Rejected { retry_after_ms, .. } => {
             eprintln!("retry in {retry_after_ms}ms");
         }
-        _ => {}
-    }
-
-    // Suppressed: smooth degradation
-    match rl.local().suppressed().inc("user_123", &rate, 1) {
-        RateLimitDecision::Allowed => { /* proceed */ }
-        RateLimitDecision::Suppressed { is_allowed, .. } => {
-            if is_allowed { /* proceed */ } else { /* shed load */ }
-        }
-        _ => {}
+        RateLimitDecision::Suppressed { .. } => unreachable!(),
     }
   ---
   ```rust [main.rs]
-  use std::sync::Arc;
   use trypema::{RateLimit, RateLimitDecision, RateLimiter};
 
-  let rate = RateLimit::try_from(10.0).unwrap(); // 10 req/s
+  let rl = RateLimiter::builder().build().unwrap();
+  let rate = RateLimit::try_from(10.0).unwrap();
 
-  // Absolute: allow or reject
   match rl.local().absolute().inc("user_123", &rate, 1) {
       RateLimitDecision::Allowed => { /* proceed */ }
       RateLimitDecision::Rejected { retry_after_ms, .. } => {
           eprintln!("retry in {retry_after_ms}ms");
       }
-      _ => {}
-  }
-
-  // Suppressed: smooth degradation
-  match rl.local().suppressed().inc("user_123", &rate, 1) {
-      RateLimitDecision::Allowed => { /* proceed */ }
-      RateLimitDecision::Suppressed { is_allowed, .. } => {
-          if is_allowed { /* proceed */ } else { /* shed load */ }
-      }
-      _ => {}
+      RateLimitDecision::Suppressed { .. } => unreachable!(),
   }
   ```
   :::
@@ -121,10 +103,10 @@ High-performance, ergonomic primitives for **local** (in-memory), **Redis-backed
 
 ::u-page-section
 #title
-Three providers, one API
+Three providers, one model
 
 #description
-Choose the backend that fits your deployment. The API is the same across all three.
+Pick the deployment shape you need today. The provider API stays familiar as you move from one machine to many.
 
 #features
   :::u-page-feature
@@ -134,7 +116,7 @@ Choose the backend that fits your deployment. The API is the same across all thr
   #title
   Local
   #description
-  In-process `DashMap` + atomics. **Sub-microsecond** latency. No external dependencies. Ideal for single-server APIs and CLI tools.
+  In-process state with the lowest latency and the least operational overhead. Best for single services, workers, CLIs, and tests.
   :::
 
   :::u-page-feature
@@ -144,7 +126,7 @@ Choose the backend that fits your deployment. The API is the same across all thr
   #title
   Redis
   #description
-  Atomic Lua scripts against Redis 6.2+. One network round-trip per call. **Distributed** rate limits across processes and servers.
+  Best-effort distributed limiting with one Redis round-trip per call. Use it when multiple instances must share limits directly.
   :::
 
   :::u-page-feature
@@ -154,7 +136,7 @@ Choose the backend that fits your deployment. The API is the same across all thr
   #title
   Hybrid
   #description
-  Local fast-path with periodic Redis sync. **Sub-microsecond** admission latency with distributed consistency. Best for high-throughput APIs.
+  Local fast-path plus periodic Redis sync. This is the highest-throughput distributed option when per-request Redis I/O is too expensive.
   :::
 ::
 
@@ -167,7 +149,7 @@ ui:
 Two strategies
 
 #description
-Choose strict enforcement or probabilistic suppression depending on your traffic pattern.
+Choose the admission style that matches your failure mode.
 
 #features
   :::u-page-feature
@@ -177,7 +159,7 @@ Choose strict enforcement or probabilistic suppression depending on your traffic
   #title
   Absolute
   #description
-  Deterministic sliding-window enforcement. Requests under capacity are **Allowed**, requests over it are **Rejected** with backoff hints (`retry_after_ms`). Simple and predictable.
+  Deterministic sliding-window limiting. Requests are either allowed or rejected, with best-effort retry hints on rejection.
   :::
 
   :::u-page-feature
@@ -187,13 +169,13 @@ Choose strict enforcement or probabilistic suppression depending on your traffic
   #title
   Suppressed
   #description
-  Probabilistic degradation inspired by [Ably](https://ably.com/blog/distributed-rate-limiting-scale-your-platform). Near capacity, an increasing fraction of requests are denied rather than all at once. The **suppression factor** (0.0 to 1.0) tells you exactly how close a key is to its limit.
+  Probabilistic shedding near or above capacity. Instead of an abrupt cliff, suppression increases as pressure rises.
   :::
 ::
 
 ::u-page-section{class="dark:bg-neutral-950"}
 #title
-Built for production
+What Trypema is built for
 
 #features
   :::u-page-feature
@@ -203,45 +185,86 @@ Built for production
   #title
   Fractional rates
   #description
-  Support for `f64` rate limits like **0.5 req/s** (one request every 2 seconds) or **5.5 req/s**. Sliding windows avoid fixed-window boundary resets.
+  Rate limits are `f64`, so `0.5 req/s` and `5.5 req/s` are first-class inputs.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-brush
+  icon: i-lucide-timer
+  ---
+  #title
+  Sliding windows
+  #description
+  Smooth request accounting without fixed-window resets. Bucket coalescing lets you tune precision versus overhead.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-trash-2
   ---
   #title
   Background cleanup
   #description
-  Automatic stale-key eviction via a background loop that holds only a `Weak` reference — no leak risk, no manual teardown.
+  Cleanup can start automatically from `build()` or manually through `run_cleanup_loop()` when you construct from explicit options.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-lock
+  icon: i-lucide-server
   ---
   #title
-  Thread-safe
+  Runtime-aware Redis support
   #description
-  Designed for `Arc<RateLimiter>`. `DashMap` shard-level locking and atomic counters. Safe for concurrent use without external synchronisation.
+  Enable exactly one of `redis-tokio` or `redis-smol`. Redis-backed providers require Redis `7.2+`.
   :::
 ::
 
-::u-page-section{class="dark:bg-gradient-to-b from-neutral-950 to-neutral-900"}
-  :::u-page-c-t-a
+::u-page-section
+#title
+Start here
+
+#features
+  :::u-page-feature
   ---
-  links:
-    - label: Get started
-      to: '/getting-started'
-      trailingIcon: i-lucide-arrow-right
-    - label: API docs (docs.rs)
-      to: 'https://docs.rs/trypema'
-      target: _blank
-      variant: subtle
-      icon: i-simple-icons-rust
-  title: Ready to start?
-  description: Pick a provider, choose a strategy, and ship with confidence.
-  class: dark:bg-neutral-950
+  icon: i-lucide-rocket
+  to: /getting-started
   ---
+  #title
+  Getting Started
+  #description
+  Install the crate, create a limiter, and choose a provider quickly.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-lightbulb
+  to: /concepts/keys
+  ---
+  #title
+  Concepts
+  #description
+  Learn how keys, rates, windows, and decisions fit together.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-layers
+  to: /providers/local
+  ---
+  #title
+  Providers
+  #description
+  Compare local, Redis, and hybrid tradeoffs before you commit to one.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-gauge
+  to: /benchmarks/benchmark-results
+  ---
+  #title
+  Benchmarks
+  #description
+  See where each provider is fastest and what the numbers do and do not mean.
   :::
 ::
