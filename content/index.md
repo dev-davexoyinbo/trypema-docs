@@ -116,6 +116,9 @@ Choose where state lives
 All providers expose absolute and suppressed limiters. The difference is latency, coordination,
 and how current each instance's view can be.
 
+#default
+  :topic-figure{topic="providers"}
+
 #features
   :::u-page-feature
   ---
