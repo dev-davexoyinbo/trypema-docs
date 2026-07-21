@@ -1,7 +1,7 @@
 ---
 seo:
-  title: Trypema - Distributed Rate Limiting for Rust
-  description: Sliding-window rate limiting for Rust with local, Redis, and hybrid providers plus absolute and suppressed strategies.
+  title: Trypema - Sliding-Window Rate Limiting for Rust
+  description: Local, Redis, and hybrid sliding-window rate limiting for Rust with absolute and probabilistic suppression strategies.
 ---
 
 ::u-page-hero{class="dark:bg-gradient-to-b from-neutral-900 to-neutral-950"}
@@ -12,10 +12,11 @@ orientation: horizontal
 :hero-background
 
 #title
-One rust rate limiter for in-memory and distributed workloads.
+Sliding-window rate limiting, from one process to a fleet.
 
 #description
-Trypema gives you one API for **in-process**, **Redis-backed**, and **hybrid** sliding-window rate limiting. Start with a single service, then scale to distributed systems without switching libraries or changing mental models.
+Trypema gives Rust services independently built **local**, **Redis**, and **hybrid** providers.
+Use binary admission or gradual probabilistic shedding without changing the underlying rate model.
 
 #links
   :::u-button
@@ -58,11 +59,11 @@ Trypema gives you one API for **in-process**, **Redis-backed**, and **hybrid** s
   filename: Cargo.toml
   code: |
     [dependencies]
-    trypema = "1"
+    trypema = "2"
   ---
   ```toml [Cargo.toml]
   [dependencies]
-  trypema = "1"
+  trypema = "2"
   ```
   :::
 
@@ -70,31 +71,37 @@ Trypema gives you one API for **in-process**, **Redis-backed**, and **hybrid** s
   ---
   filename: main.rs
   code: |
-    use trypema::{RateLimit, RateLimitDecision, RateLimiter};
+    use trypema::{RateLimit, RateLimitDecision, RateLimiterBuilder};
+    use trypema::local::LocalRateLimiterProvider;
 
-    let rl = RateLimiter::builder().build().unwrap();
-    let rate = RateLimit::try_from(10.0).unwrap();
+    fn main() {
+        let provider = LocalRateLimiterProvider::builder().build().unwrap();
+        let rate = RateLimit::per_second_or_panic(10.0);
 
-    match rl.local().absolute().inc("user_123", &rate, 1) {
-        RateLimitDecision::Allowed => { /* proceed */ }
-        RateLimitDecision::Rejected { retry_after_ms, .. } => {
-            eprintln!("retry in {retry_after_ms}ms");
+        match provider.absolute().inc("user_123", &rate, 1) {
+            RateLimitDecision::Allowed => println!("allowed"),
+            RateLimitDecision::Rejected { retry_after, .. } => {
+                println!("retry in {retry_after:?}");
+            }
+            RateLimitDecision::Suppressed { .. } => unreachable!(),
         }
-        RateLimitDecision::Suppressed { .. } => unreachable!(),
     }
   ---
   ```rust [main.rs]
-  use trypema::{RateLimit, RateLimitDecision, RateLimiter};
+  use trypema::{RateLimit, RateLimitDecision, RateLimiterBuilder};
+  use trypema::local::LocalRateLimiterProvider;
 
-  let rl = RateLimiter::builder().build().unwrap();
-  let rate = RateLimit::try_from(10.0).unwrap();
+  fn main() {
+      let provider = LocalRateLimiterProvider::builder().build().unwrap();
+      let rate = RateLimit::per_second_or_panic(10.0);
 
-  match rl.local().absolute().inc("user_123", &rate, 1) {
-      RateLimitDecision::Allowed => { /* proceed */ }
-      RateLimitDecision::Rejected { retry_after_ms, .. } => {
-          eprintln!("retry in {retry_after_ms}ms");
+      match provider.absolute().inc("user_123", &rate, 1) {
+          RateLimitDecision::Allowed => println!("allowed"),
+          RateLimitDecision::Rejected { retry_after, .. } => {
+              println!("retry in {retry_after:?}");
+          }
+          RateLimitDecision::Suppressed { .. } => unreachable!(),
       }
-      RateLimitDecision::Suppressed { .. } => unreachable!(),
   }
   ```
   :::
@@ -103,40 +110,44 @@ Trypema gives you one API for **in-process**, **Redis-backed**, and **hybrid** s
 
 ::u-page-section
 #title
-Three providers, one model
+Choose where state lives
 
 #description
-Pick the deployment shape you need today. The provider API stays familiar as you move from one machine to many.
+All providers expose absolute and suppressed limiters. The difference is latency, coordination,
+and how current each instance's view can be.
 
 #features
   :::u-page-feature
   ---
   icon: i-lucide-cpu
+  to: /providers/local
   ---
   #title
   Local
   #description
-  In-process state with the lowest latency and the least operational overhead. Best for single services, workers, CLIs, and tests.
+  Synchronous, in-process state and the lowest overhead. Limits apply independently to each process.
   :::
 
   :::u-page-feature
   ---
   icon: i-lucide-database
+  to: /providers/redis
   ---
   #title
   Redis
   #description
-  Best-effort distributed limiting with one Redis round-trip per call. Use it when multiple instances must share limits directly.
+  Async shared state with Redis I/O on every call. Best when instances need the freshest remote view.
   :::
 
   :::u-page-feature
   ---
   icon: i-lucide-arrow-left-right
+  to: /providers/hybrid
   ---
   #title
   Hybrid
   #description
-  Local fast-path plus periodic Redis sync. This is the highest-throughput distributed option when per-request Redis I/O is too expensive.
+  Local admission with periodic Redis synchronization. Higher throughput, with bounded visibility lag.
   :::
 ::
 
@@ -146,66 +157,99 @@ ui:
   features: 'lg:grid-cols-2'
 ---
 #title
-Two strategies
-
-#description
-Choose the admission style that matches your failure mode.
+Choose how pressure is handled
 
 #features
   :::u-page-feature
   ---
   icon: i-lucide-shield
+  to: /strategies/absolute
   ---
   #title
   Absolute
   #description
-  Deterministic sliding-window limiting. Requests are either allowed or rejected, with best-effort retry hints on rejection.
+  Each call is allowed or rejected. Rejections include best-effort timing and released-capacity hints.
   :::
 
   :::u-page-feature
   ---
   icon: i-lucide-activity
+  to: /strategies/suppressed
   ---
   #title
   Suppressed
   #description
-  Probabilistic shedding near or above capacity. Instead of an abrupt cliff, suppression increases as pressure rises.
+  Denial probability rises with pressure, allowing gradual shedding instead of an abrupt cutoff.
   :::
 ::
 
 ::u-page-section{class="dark:bg-neutral-950"}
 #title
-What Trypema is built for
+One explicit rate model
+
+#description
+A `RateLimit` is normalized per second. Multiplying it by `WindowSize` gives the live-window
+capacity; `BucketSize` controls how nearby increments are grouped.
 
 #features
   :::u-page-feature
   ---
-  icon: i-lucide-gauge
-  ---
-  #title
-  Fractional rates
-  #description
-  Rate limits are `f64`, so `0.5 req/s` and `5.5 req/s` are first-class inputs.
-  :::
-
-  :::u-page-feature
-  ---
   icon: i-lucide-timer
+  to: /concepts/sliding-windows
   ---
   #title
-  Sliding windows
+  Live sliding windows
   #description
-  Smooth request accounting without fixed-window resets. Bucket coalescing lets you tune precision versus overhead.
+  Reads include only live buckets. Unknown keys return zero without creating state; expired history may be lazily evicted.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-trash-2
+  icon: i-lucide-pin
+  to: /concepts/rate-limits
   ---
   #title
-  Background cleanup
+  Sticky capacity
   #description
-  Cleanup can start automatically from `build()` or manually through `run_cleanup_loop()` when you construct from explicit options.
+  The first increment stores a key's computed capacity. Later increments keep it until a matched conditional update replaces it.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-git-compare-arrows
+  to: /strategies/absolute
+  ---
+  #title
+  Safe reconciliation
+  #description
+  Comparator-gated writes can replace history or preserve its newest or oldest side. A matched zero removes the key.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-box
+  to: /concepts/configuration-types
+  ---
+  #title
+  Validated configuration
+  #description
+  Semantic types make units and constraints explicit for windows, buckets, suppression, and hybrid synchronization.
+  :::
+::
+
+::u-page-section
+#title
+Know the production boundaries
+
+#features
+  :::u-page-feature
+  ---
+  icon: i-lucide-users
+  ---
+  #title
+  Best-effort concurrency
+  #description
+  Admission is not a strict cross-caller transaction. Concurrent callers can temporarily overshoot a limit.
   :::
 
   :::u-page-feature
@@ -213,15 +257,26 @@ What Trypema is built for
   icon: i-lucide-server
   ---
   #title
-  Runtime-aware Redis support
+  Redis requirements
   #description
-  Enable exactly one of `redis-tokio` or `redis-smol`. Redis-backed providers require Redis `7.2+`.
+  Redis and hybrid require Redis 7.2+ and exactly one crate feature: `redis-tokio` or `redis-smol`.
+  :::
+
+  :::u-page-feature
+  ---
+  icon: i-lucide-trash-2
+  to: /guides/cleanup
+  ---
+  #title
+  Automatic cleanup
+  #description
+  Builders start stale-state cleanup by default. It can be disabled or controlled with idempotent start and stop methods.
   :::
 ::
 
 ::u-page-section
 #title
-Start here
+Go deeper
 
 #features
   :::u-page-feature
@@ -232,29 +287,29 @@ Start here
   #title
   Getting Started
   #description
-  Install the crate, create a limiter, and choose a provider quickly.
+  Install v2 and run local, Redis, or hybrid quickstarts.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-lightbulb
-  to: /concepts/keys
+  icon: i-lucide-book-open
+  to: /concepts/configuration-types
   ---
   #title
   Concepts
   #description
-  Learn how keys, rates, windows, and decisions fit together.
+  Understand keys, rates, windows, configuration, and decisions.
   :::
 
   :::u-page-feature
   ---
-  icon: i-lucide-layers
-  to: /providers/local
+  icon: i-lucide-file-text
+  to: /reference/api
   ---
   #title
-  Providers
+  API Map
   #description
-  Compare local, Redis, and hybrid tradeoffs before you commit to one.
+  Find providers, shared types, and core operations without reading generated API pages first.
   :::
 
   :::u-page-feature
@@ -265,6 +320,6 @@ Start here
   #title
   Benchmarks
   #description
-  See where each provider is fastest and what the numbers do and do not mean.
+  Compare providers using documented workloads, throughput, and tail latency.
   :::
 ::
