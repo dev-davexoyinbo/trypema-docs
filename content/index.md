@@ -59,11 +59,11 @@ Use binary admission or gradual probabilistic shedding without changing the unde
   filename: Cargo.toml
   code: |
     [dependencies]
-    trypema = "2"
+    trypema = "3"
   ---
   ```toml [Cargo.toml]
   [dependencies]
-  trypema = "2"
+  trypema = "3"
   ```
   :::
 
@@ -71,11 +71,12 @@ Use binary admission or gradual probabilistic shedding without changing the unde
   ---
   filename: main.rs
   code: |
+    use std::sync::Arc;
     use trypema::{RateLimit, RateLimitDecision, RateLimiterBuilder};
     use trypema::local::LocalRateLimiterProvider;
 
     fn main() {
-        let provider = LocalRateLimiterProvider::builder().build().unwrap();
+        let provider: Arc<LocalRateLimiterProvider> = RateLimiterBuilder::local().build().unwrap();
         let rate = RateLimit::per_second_or_panic(10.0);
 
         match provider.absolute().inc("user_123", &rate, 1) {
@@ -88,11 +89,12 @@ Use binary admission or gradual probabilistic shedding without changing the unde
     }
   ---
   ```rust [main.rs]
+  use std::sync::Arc;
   use trypema::{RateLimit, RateLimitDecision, RateLimiterBuilder};
   use trypema::local::LocalRateLimiterProvider;
 
   fn main() {
-      let provider = LocalRateLimiterProvider::builder().build().unwrap();
+      let provider: Arc<LocalRateLimiterProvider> = RateLimiterBuilder::local().build().unwrap();
       let rate = RateLimit::per_second_or_panic(10.0);
 
       match provider.absolute().inc("user_123", &rate, 1) {
@@ -290,7 +292,7 @@ Go deeper
   #title
   Getting Started
   #description
-  Install v2 and run local, Redis, or hybrid quickstarts.
+  Install v3 and run local, Redis, or hybrid quickstarts.
   :::
 
   :::u-page-feature
